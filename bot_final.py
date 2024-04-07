@@ -37,12 +37,6 @@ class Birthday(Field):
             super().__init__(value)
         except:
             raise ValueError
-        
-    def add_birthday(self, birthday):
-        if isinstance(birthday, Birthday):
-            self.date = birthday.date
-        else:
-            raise ValueError
 
 
 class Record:
@@ -60,21 +54,34 @@ class Record:
     def edit_phone(self, old_phone, new_phone):
         if not new_phone.isdigit() or len(new_phone) != 10:
             raise ValueError
-        
+
+        phone_found = False
         for p in self.phones:
             if p.value == old_phone:
                 p.value = new_phone
+                phone_found = True
                 break
+    
+        if not phone_found:
+            raise ValueError
 
     def find_phone(self, phone):
         for p in self.phones:
             if p.value == phone:
                 return p
         return None
+    
+    def add_birthday(self, birthday):
+        if isinstance(birthday, Birthday):
+            self.birthday = birthday
+        else:
+            raise ValueError
 
 
     def __str__(self):
-        return f"Contact name: {self.name.value}, phones: {'; '.join(str(p) for p in self.phones)}"
+        phone_numbers = '; '.join(str(p) for p in self.phones)
+        birthday_info = f", birthday: {self.birthday.value}" if self.birthday else "-"
+        return f"Contact name: {self.name.value}, phones: {phone_numbers}, birthday: {birthday_info}"
 
 class AddressBook(UserDict):
     def add_record(self, record):
@@ -113,11 +120,11 @@ def parse_input(user_input):
 def add_contact(args, book: AddressBook):
     name, *phones = args 
     record = book.find(name)
-    message = "Contact updated successfully"
+    message = "Contact updated."
     if record is None:
         record = Record(name)
         book.add_record(record)
-        message = "Contact added successfully"
+        message = "Contact added."
     for phone in phones: 
         record.add_phone(phone)
     return message
@@ -128,7 +135,7 @@ def change_contact(args, book: AddressBook):
     record = book.find(name)
     if record:
         record.edit_phone(old_phone, new_phone)
-        return "Contact updated successfully"
+        return "Contact updated."
     else:
         raise KeyError
 
@@ -213,6 +220,9 @@ def main():
 
         elif command == "show-birthday":
             print(show_birthday(args, book))
+
+        elif command == "birthdays":
+            print(birthdays(book))
 
 
 
